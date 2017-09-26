@@ -11,12 +11,15 @@ import {
     Secrets,
     Success,
 } from "@atomist/automation-client/Handlers";
+import { runCommand, CommandResult } from "@atomist/automation-client/internal/util/commandLine";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
+import * as appRoot from "app-root-path";
 import axios from "axios";
 import { exec } from "child-process-promise";
 import * as _ from "lodash";
 import * as graphql from "../typings/types";
+import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 
 @EventHandler("Runs ts tslint --fix on a given repository",
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
@@ -36,51 +39,43 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                 if (project.fileExistsSync("tslint.json")) {
                     const baseDir = project.baseDir;
 
-                    // If it exists run npm install
-                    return exec("npm install", { cwd: baseDir })
-                            .then(() => {
-                                return exec("npm run lint", { cwd: baseDir });
-                            })
+                    // If it exists run our linting script
+                    return runCommand(`bash ${appRoot}/scripts/run-lint.bash`, { cwd: baseDir })
                             .then(result => {
-                                return this.raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
-                                    result.childProcess.exitCode === 0 ? "success" : "failure");
+                                return this.commitAndPush(push, project, result, baseDir, ctx);
                             }).catch( result => {
-                                // This is where we are going to send a DM to the pusher
-                                return this.sentNotifaction(push, result, baseDir, ctx)
-                                    .then(() => {
-                                        // Raise GitHub status
-                                        return this.raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
-                                            result.childProcess.exitCode === 0 ? "success" : "failure");
-                                    })
-                                    .then(() => {
-                                        return exec("npm run lint-fix", { cwd: baseDir });
-                                    })
-                                    // Commit and push all modifications
-                                    .then(() => {
-                                        return project.createBranch(push.branch);
-                                    })
-                                    .then(() => {
-                                        return project.commit(`Automatic de-linting\n[atomist:auto-delint]`);
-                                    })
-                                    .then(() => {
-                                        return project.push();
-                                    });
+                                return this.commitAndPush(push, project, result, baseDir, ctx);
                             });
                 } else {
                     return Promise.reject("No 'tslint.json' found in project root");
                 }
             })
-            .then(() => {
-                return Success;
+            .then(() => Success)
+            .catch(err => ({ code: 1, message: err.message }));
+    }
+
+    private commitAndPush(push: graphql.PushToTsLinting.Push, project: GitProject, result: CommandResult,
+                          baseDir: string, ctx: HandlerContext): Promise<any> {
+        return project.clean()
+            .then( clean => {
+                if (!clean) {
+                    return project.createBranch(push.branch)
+                        .then(() => project.commit(`Automatic de-linting\n[atomist:auto-delint]`))
+                        .then(() => project.push());
+                } else {
+                    return Promise.resolve(Success);
+                }
             })
-            .catch(err => {
-                return { code: 1, message: err.message };
+            .then(() => this.sentNotifaction(push, result, baseDir, ctx))
+            .then(() => {
+                return this.raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
+                    result.childProcess.exitCode);
             });
     }
 
     private sentNotifaction(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
                             ctx: HandlerContext): Promise<any> {
-        if (result.childProcess.exitCode === 0) {
+        if (result.childProcess.exitCode === 0 || !result.stdout) {
             return Promise.resolve();
         } else if (_.get(push, "after.author.person.chatId.screenName")) {
             const msg: SlackMessage = {
@@ -100,11 +95,11 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
         }
     }
 
-    private raiseGitHubStatus(owner: string, repo: string, sha: string, state: string): Promise<any> {
+    private raiseGitHubStatus(owner: string, repo: string, sha: string, code: number): Promise<any> {
         return axios.post(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
-                state,
+                state: code === 0 ? "success" : "failure",
                 context: "linting/atomist",
-                description: `Linting of TypeSript sources ${state === "success" ? "was successful" : "failed"}`,
+                description: `Linting of TypeSript sources ${code === 0 ? "was successful" : "failed"}`,
             }, {
                 headers: {
                     Authorization: `token ${this.githubToken}`,

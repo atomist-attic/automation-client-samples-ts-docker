@@ -1,25 +1,17 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import * as appRoot from "app-root-path";
-import * as cfenv from "cfenv";
 import { PushToTsLinting } from "./handlers/PushToTsLinting";
 
 // tslint:disable-next-line:no-var-requires
 const pj = require(`${appRoot}/package.json`);
 
-const appEnv = cfenv.getAppEnv();
-const credService = appEnv.getServiceCreds("github-token");
-const dashboardService = appEnv.getServiceCreds("dashboard-credentials");
-
-const token = credService ? credService.token : process.env.GITHUB_TOKEN;
-const username = dashboardService ? dashboardService.user : undefined;
-const password = dashboardService ? dashboardService.password : undefined;
-
-const authEnabled = !appEnv.isLocal;
+const token = process.env.GITHUB_TOKEN;
+const teamId = process.env.TEAM_ID;
 
 export const configuration: Configuration = {
     name: pj.name,
     version: pj.version,
-    teamId: "T1L0VDKJP",
+    teamId,
     events: [
         () => new PushToTsLinting(),
     ],
@@ -28,12 +20,10 @@ export const configuration: Configuration = {
         enabled: true,
         auth: {
             basic: {
-                enabled: authEnabled,
-                username,
-                password,
+                enabled: false,
             },
             bearer: {
-                enabled: authEnabled,
+                enabled: false,
             },
         },
     },

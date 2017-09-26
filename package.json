@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.5",
+    "@atomist/automation-client": "^0.1.16",
     "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
     "cfenv": "^1.0.4",
@@ -40,11 +40,12 @@
     "testone": "mocha --compilers ts:espower-typescript/guess \"test/**/${TEST:-*.ts}\"",
     "test": "mocha --compilers ts:espower-typescript/guess \"test/**/*.ts\"",
     "benchmark": "mocha --prof --compilers ts:espower-typescript/guess \"test/**/*Benchmark.ts\"; node --prof-process isolate-* > profile.txt",
-    "start": "npm run compile && $(npm bin)/atomist-client --open=true",
+    "start": "$(npm bin)/atomist-client",
     "autostart": "npm-run-all --parallel watch:build watch:server --print-label",
     "watch:build": "tsc --watch",
     "watch:server": "nodemon node_modules/@atomist/automation-client/start.client.js --watch './build'",
-    "debug": "node $NODE_DEBUG_OPTION node_modules/@atomist/automation-client/start.client.js"
+    "debug": "node $NODE_DEBUG_OPTION node_modules/@atomist/automation-client/start.client.js",
+    "docker:build": "npm run compile && docker build . -t automation-client-samples-ts-docker"
   },
   "author": "Atomist, Inc.",
   "license": "GPL-3.0",
