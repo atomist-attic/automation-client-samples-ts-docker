@@ -2,21 +2,21 @@ import {
     EventHandler,
     Secret,
 } from "@atomist/automation-client/decorators";
+import * as GraphQL from "@atomist/automation-client/graph/graphQL";
 import {
+    EventFired,
+    HandleEvent,
     HandlerContext,
     HandlerResult,
     Secrets,
     Success,
-    EventFired,
-    HandleEvent,
 } from "@atomist/automation-client/Handlers";
-import { exec } from "child-process-promise";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
-import * as GraphQL from "@atomist/automation-client/graph/graphQL";
-import * as graphql from "../typings/types";
-import axios from "axios";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
+import axios from "axios";
+import { exec } from "child-process-promise";
 import * as _ from "lodash";
+import * as graphql from "../typings/types";
 
 @EventHandler("Runs ts tslint --fix on a given repository",
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
@@ -25,7 +25,8 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;
 
-    public handle(event: EventFired<graphql.PushToTsLinting.Subscription>, ctx: HandlerContext): Promise<HandlerResult> {
+    public handle(event: EventFired<graphql.PushToTsLinting.Subscription>,
+                  ctx: HandlerContext): Promise<HandlerResult> {
         const push = event.data.Push[0];
 
         return GitCommandGitProject.cloned(this.githubToken, push.repo.owner, push.repo.name, push.branch)
@@ -52,7 +53,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                                             result.childProcess.exitCode === 0 ? "success" : "failure");
                                     })
                                     .then(() => {
-                                        return exec("npm run lint-fix", { cwd: baseDir })
+                                        return exec("npm run lint-fix", { cwd: baseDir });
                                     })
                                     // Commit and push all modifications
                                     .then(() => {
@@ -77,10 +78,11 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
             });
     }
 
-    private sentNotifaction(push: graphql.PushToTsLinting.Push, result: any, baseDir: string, ctx: HandlerContext): Promise<any> {
+    private sentNotifaction(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
+                            ctx: HandlerContext): Promise<any> {
         if (result.childProcess.exitCode === 0) {
             return Promise.resolve();
-        } else if (_.get(push, "after.author.person.chatId.screenName")){
+        } else if (_.get(push, "after.author.person.chatId.screenName")) {
             const msg: SlackMessage = {
                 text: `Linting failed after your push to \`${push.repo.owner}/${push.repo.name}\``,
                 attachments: [{
@@ -92,8 +94,8 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                     footer_icon: "http://images.atomist.com/rug/commit.png",
                     footer: `${push.repo.owner}/${push.repo.name}`,
                     ts:  Math.floor(new Date().getTime() / 1000),
-                }]
-            }
+                }],
+            };
             return ctx.messageClient.addressUsers(msg, push.after.author.person.chatId.screenName);
         }
     }
