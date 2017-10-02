@@ -16,6 +16,8 @@ COPY . /app
 RUN  git config --global user.email "bot@atomist.com"
 RUN  git config --global user.name "Atomist Bot"
 
+ENV SUPPRESS_NO_CONFIG_WARNING true
+
 EXPOSE 2866
 
 CMD [ "npm", "start" ]
