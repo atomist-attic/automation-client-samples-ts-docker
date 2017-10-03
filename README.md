@@ -1,7 +1,7 @@
 # @atomist/automation-client-samples-ts-docker
 
 [Node][node] module containing samples demonstrating wrapping shell scripts 
-by Atomist handlers and package it up in a Docker iamge.
+by Atomist handlers and package it up in a Docker image.
 
 Please visit [automation-client][automation-client] for more information about 
 writing custom handlers.
