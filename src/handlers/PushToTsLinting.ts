@@ -66,14 +66,14 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                     return Promise.resolve(Success);
                 }
             })
-            .then(() => this.sentNotifaction(push, result, baseDir, ctx))
+            .then(() => this.sendNotification(push, result, baseDir, ctx))
             .then(() => {
                 return this.raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
                     result.childProcess.exitCode);
             });
     }
 
-    private sentNotifaction(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
+    private sendNotification(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
         ctx: HandlerContext): Promise<any> {
         if (result.childProcess.exitCode === 0 || !result.stdout) {
             return Promise.resolve();
@@ -99,7 +99,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
         return axios.post(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
             state: code === 0 ? "success" : "failure",
             context: "linting/atomist",
-            description: `Linting of TypeSript sources ${code === 0 ? "was successful" : "failed"}`,
+            description: `Linting of TypeScript sources ${code === 0 ? "was successful" : "failed"}`,
         }, {
                 headers: {
                     Authorization: `token ${this.githubToken}`,
