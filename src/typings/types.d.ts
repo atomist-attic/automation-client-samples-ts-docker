@@ -41,9 +41,6 @@ export type _OrgOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_d
 /* Ordering Enum for GitHubOrgWebhook */
 export type _GitHubOrgWebhookOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "url_asc" | "url_desc";
 
-/* Ordering Enum for UserPreferences */
-export type _UserPreferencesOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "updatedAt_asc" | "updatedAt_desc" | "properties_asc" | "properties_desc";
-
 /* Ordering Enum for ChannelLink */
 export type _ChannelLinkOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc";
 

@@ -25,11 +25,11 @@ import { GitProject } from "@atomist/automation-client/project/git/GitProject";
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
 export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subscription> {
 
-    @Secret(Secrets.ORG_TOKEN)
+    @Secret(Secrets.OrgToken)
     public githubToken: string;
 
     public handle(event: EventFired<graphql.PushToTsLinting.Subscription>,
-                  ctx: HandlerContext): Promise<HandlerResult> {
+        ctx: HandlerContext): Promise<HandlerResult> {
         const push = event.data.Push[0];
 
         return GitCommandGitProject.cloned(this.githubToken, push.repo.owner, push.repo.name, push.branch)
@@ -41,11 +41,11 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
 
                     // If it exists run our linting script
                     return runCommand(`bash ${appRoot}/scripts/run-lint.bash`, { cwd: baseDir })
-                            .then(result => {
-                                return this.commitAndPush(push, project, result, baseDir, ctx);
-                            }).catch( result => {
-                                return this.commitAndPush(push, project, result, baseDir, ctx);
-                            });
+                        .then(result => {
+                            return this.commitAndPush(push, project, result, baseDir, ctx);
+                        }).catch(result => {
+                            return this.commitAndPush(push, project, result, baseDir, ctx);
+                        });
                 } else {
                     return Promise.reject("No 'tslint.json' found in project root");
                 }
@@ -55,9 +55,9 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     }
 
     private commitAndPush(push: graphql.PushToTsLinting.Push, project: GitProject, result: CommandResult,
-                          baseDir: string, ctx: HandlerContext): Promise<any> {
+        baseDir: string, ctx: HandlerContext): Promise<any> {
         return project.clean()
-            .then( clean => {
+            .then(clean => {
                 if (!clean) {
                     return project.createBranch(push.branch)
                         .then(() => project.commit(`Automatic de-linting\n[atomist:auto-delint]`))
@@ -74,7 +74,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     }
 
     private sentNotifaction(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
-                            ctx: HandlerContext): Promise<any> {
+        ctx: HandlerContext): Promise<any> {
         if (result.childProcess.exitCode === 0 || !result.stdout) {
             return Promise.resolve();
         } else if (_.get(push, "after.author.person.chatId.screenName")) {
@@ -85,10 +85,10 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                     fallback: "Linting of TypeScript sources failed",
                     title: "Linting of TypeScript sources failed",
                     text: `\`\`\`${result.stdout.split(baseDir).join("")}\`\`\``,
-                    mrkdwn_in: [ "text" ],
+                    mrkdwn_in: ["text"],
                     footer_icon: "http://images.atomist.com/rug/commit.png",
                     footer: `${push.repo.owner}/${push.repo.name}`,
-                    ts:  Math.floor(new Date().getTime() / 1000),
+                    ts: Math.floor(new Date().getTime() / 1000),
                 }],
             };
             return ctx.messageClient.addressUsers(msg, push.after.author.person.chatId.screenName);
@@ -97,10 +97,10 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
 
     private raiseGitHubStatus(owner: string, repo: string, sha: string, code: number): Promise<any> {
         return axios.post(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
-                state: code === 0 ? "success" : "failure",
-                context: "linting/atomist",
-                description: `Linting of TypeSript sources ${code === 0 ? "was successful" : "failed"}`,
-            }, {
+            state: code === 0 ? "success" : "failure",
+            context: "linting/atomist",
+            description: `Linting of TypeSript sources ${code === 0 ? "was successful" : "failed"}`,
+        }, {
                 headers: {
                     Authorization: `token ${this.githubToken}`,
                 },

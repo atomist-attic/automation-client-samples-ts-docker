@@ -6,12 +6,12 @@ import { PushToTsLinting } from "./handlers/PushToTsLinting";
 const pj = require(`${appRoot}/package.json`);
 
 const token = process.env.GITHUB_TOKEN;
-const teamId = process.env.TEAM_ID;
+const teamIds = process.env.TEAM_ID;
 
 export const configuration: Configuration = {
     name: pj.name,
     version: pj.version,
-    teamId,
+    teamIds,
     events: [
         () => new PushToTsLinting(),
     ],
