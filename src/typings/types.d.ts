@@ -9,7 +9,7 @@ export type IssueState = "open" | "closed";
 export type _IssueOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "number_asc" | "number_desc" | "name_asc" | "name_desc" | "title_asc" | "title_desc" | "body_asc" | "body_desc" | "state_asc" | "state_desc" | "timestamp_asc" | "timestamp_desc" | "action_asc" | "action_desc" | "createdAt_asc" | "createdAt_desc" | "updatedAt_asc" | "updatedAt_desc" | "closedAt_asc" | "closedAt_desc";
 
 /* Ordering Enum for Repo */
-export type _RepoOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "owner_asc" | "owner_desc" | "name_asc" | "name_desc" | "allowRebaseMerge_asc" | "allowRebaseMerge_desc" | "allowSquashMerge_asc" | "allowSquashMerge_desc" | "allowMergeCommit_asc" | "allowMergeCommit_desc" | "defaultBranch_asc" | "defaultBranch_desc";
+export type _RepoOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "owner_asc" | "owner_desc" | "name_asc" | "name_desc" | "allowRebaseMerge_asc" | "allowRebaseMerge_desc" | "allowSquashMerge_asc" | "allowSquashMerge_desc" | "allowMergeCommit_asc" | "allowMergeCommit_desc" | "gitHubId_asc" | "gitHubId_desc" | "defaultBranch_asc" | "defaultBranch_desc";
 
 /* Ordering Enum for Label */
 export type _LabelOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "name_asc" | "name_desc" | "default_asc" | "default_desc" | "color_asc" | "color_desc";
@@ -45,7 +45,7 @@ export type _GitHubOrgWebhookOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id
 export type _ChannelLinkOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc";
 
 /* Ordering Enum for PullRequest */
-export type _PullRequestOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "number_asc" | "number_desc" | "name_asc" | "name_desc" | "body_asc" | "body_desc" | "state_asc" | "state_desc" | "merged_asc" | "merged_desc" | "timestamp_asc" | "timestamp_desc" | "baseBranchName_asc" | "baseBranchName_desc" | "branchName_asc" | "branchName_desc" | "title_asc" | "title_desc" | "createdAt_asc" | "createdAt_desc" | "updatedAt_asc" | "updatedAt_desc" | "closedAt_asc" | "closedAt_desc" | "mergedAt_asc" | "mergedAt_desc";
+export type _PullRequestOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "id_asc" | "id_desc" | "number_asc" | "number_desc" | "prId_asc" | "prId_desc" | "name_asc" | "name_desc" | "body_asc" | "body_desc" | "state_asc" | "state_desc" | "merged_asc" | "merged_desc" | "timestamp_asc" | "timestamp_desc" | "baseBranchName_asc" | "baseBranchName_desc" | "branchName_asc" | "branchName_desc" | "title_asc" | "title_desc" | "createdAt_asc" | "createdAt_desc" | "updatedAt_asc" | "updatedAt_desc" | "closedAt_asc" | "closedAt_desc" | "mergedAt_asc" | "mergedAt_desc";
 
 /* Ordering Enum for Commit */
 export type _CommitOrdering = "atmTeamId_asc" | "atmTeamId_desc" | "sha_asc" | "sha_desc" | "message_asc" | "message_desc" | "timestamp_asc" | "timestamp_desc";

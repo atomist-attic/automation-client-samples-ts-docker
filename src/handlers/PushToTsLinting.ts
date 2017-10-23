@@ -11,7 +11,7 @@ import {
     Secrets,
     Success,
 } from "@atomist/automation-client/Handlers";
-import { runCommand, CommandResult } from "@atomist/automation-client/internal/util/commandLine";
+import { runCommand, CommandResult } from "@atomist/automation-client/action/cli/commandLine";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
 import * as appRoot from "app-root-path";
@@ -56,18 +56,19 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
 
     private commitAndPush(push: graphql.PushToTsLinting.Push, project: GitProject, result: CommandResult,
         baseDir: string, ctx: HandlerContext): Promise<any> {
-        return project.clean()
-            .then(clean => {
-                if (!clean) {
+        return project.isClean().
+            then(clean => {
+                if (!clean.success) {
                     return project.createBranch(push.branch)
                         .then(() => project.commit(`Automatic de-linting\n[atomist:auto-delint]`))
-                        .then(() => project.push());
+                        .then(() => project.push())
+                        .then(() => Success);
                 } else {
                     return Promise.resolve(Success);
                 }
-            })
-            .then(() => this.sendNotification(push, result, baseDir, ctx))
-            .then(() => {
+            }).
+            then(() => this.sendNotification(push, result, baseDir, ctx)).
+            then(() => {
                 return this.raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
                     result.childProcess.exitCode);
             });
