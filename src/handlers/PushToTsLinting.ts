@@ -1,3 +1,4 @@
+import { CommandResult, runCommand } from "@atomist/automation-client/action/cli/commandLine";
 import {
     EventHandler,
     Secret,
@@ -11,15 +12,14 @@ import {
     Secrets,
     Success,
 } from "@atomist/automation-client/Handlers";
-import { runCommand, CommandResult } from "@atomist/automation-client/action/cli/commandLine";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
+import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
 import * as appRoot from "app-root-path";
 import axios from "axios";
 import { exec } from "child-process-promise";
 import * as _ from "lodash";
 import * as graphql from "../typings/types";
-import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 
 @EventHandler("Runs ts tslint --fix on a given repository",
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
@@ -29,7 +29,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     public githubToken: string;
 
     public handle(event: EventFired<graphql.PushToTsLinting.Subscription>,
-        ctx: HandlerContext): Promise<HandlerResult> {
+                  ctx: HandlerContext): Promise<HandlerResult> {
         const push = event.data.Push[0];
 
         return GitCommandGitProject.cloned(this.githubToken, push.repo.owner, push.repo.name, push.branch)
@@ -55,7 +55,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     }
 
     private commitAndPush(push: graphql.PushToTsLinting.Push, project: GitProject, result: CommandResult,
-        baseDir: string, ctx: HandlerContext): Promise<any> {
+                          baseDir: string, ctx: HandlerContext): Promise<any> {
         return project.isClean().
             then(clean => {
                 if (!clean.success) {
@@ -75,7 +75,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
     }
 
     private sendNotification(push: graphql.PushToTsLinting.Push, result: any, baseDir: string,
-        ctx: HandlerContext): Promise<any> {
+                             ctx: HandlerContext): Promise<any> {
         if (result.childProcess.exitCode === 0 || !result.stdout) {
             return Promise.resolve();
         } else if (_.get(push, "after.author.person.chatId.screenName")) {
