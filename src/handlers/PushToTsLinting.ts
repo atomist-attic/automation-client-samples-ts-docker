@@ -33,7 +33,8 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                   ctx: HandlerContext): Promise<HandlerResult> {
         const push = event.data.Push[0];
 
-        return GitCommandGitProject.cloned({ token: this.githubToken }, new GitHubRepoRef(push.repo.owner, push.repo.name, push.branch))
+        return GitCommandGitProject.cloned({ token: this.githubToken },
+            new GitHubRepoRef(push.repo.owner, push.repo.name, push.branch))
             .then(project => {
 
                 // Verify that the tslint.json exists in the root of repo
