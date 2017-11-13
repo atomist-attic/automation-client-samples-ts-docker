@@ -1,9 +1,3 @@
-import { CommandResult, runCommand } from "@atomist/automation-client/action/cli/commandLine";
-import {
-    EventHandler,
-    Secret,
-} from "@atomist/automation-client/decorators";
-import * as GraphQL from "@atomist/automation-client/graph/graphQL";
 import {
     EventFired,
     HandleEvent,
@@ -12,6 +6,13 @@ import {
     Secrets,
     Success,
 } from "@atomist/automation-client";
+import { CommandResult, runCommand } from "@atomist/automation-client/action/cli/commandLine";
+import {
+    EventHandler,
+    Secret,
+} from "@atomist/automation-client/decorators";
+import * as GraphQL from "@atomist/automation-client/graph/graphQL";
+import { GitHubRepoRef } from "@atomist/automation-client/operations/common/GitHubRepoRef";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
 import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
@@ -20,7 +21,6 @@ import axios from "axios";
 import { exec } from "child-process-promise";
 import * as _ from "lodash";
 import * as graphql from "../typings/types";
-import { GitHubRepoRef } from "@atomist/automation-client/operations/common/GitHubRepoRef";
 
 @EventHandler("Runs ts tslint --fix on a given repository",
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
