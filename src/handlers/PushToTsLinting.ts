@@ -11,7 +11,7 @@ import {
     HandlerResult,
     Secrets,
     Success,
-} from "@atomist/automation-client/Handlers";
+} from "@atomist/automation-client";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
 import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 import { SlackMessage } from "@atomist/slack-messages/SlackMessages";
@@ -20,6 +20,7 @@ import axios from "axios";
 import { exec } from "child-process-promise";
 import * as _ from "lodash";
 import * as graphql from "../typings/types";
+import { GitHubRepoRef } from "@atomist/automation-client/operations/common/GitHubRepoRef";
 
 @EventHandler("Runs ts tslint --fix on a given repository",
     GraphQL.subscriptionFromFile("graphql/subscription/pushToTsLinting"))
@@ -32,7 +33,7 @@ export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subs
                   ctx: HandlerContext): Promise<HandlerResult> {
         const push = event.data.Push[0];
 
-        return GitCommandGitProject.cloned(this.githubToken, push.repo.owner, push.repo.name, push.branch)
+        return GitCommandGitProject.cloned({ token: this.githubToken }, new GitHubRepoRef(push.repo.owner, push.repo.name, push.branch))
             .then(project => {
 
                 // Verify that the tslint.json exists in the root of repo
