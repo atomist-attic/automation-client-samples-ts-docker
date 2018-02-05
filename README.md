@@ -1,4 +1,7 @@
-# @atomist/automation-client-samples-ts-docker
+# DEPRECATED @atomist/automation-client-samples-ts-docker
+
+See [automation-seed](https://github.com/atomist/automation-seed-ts) for an
+up-to-date example of a Docker-enabled automation client.
 
 [Node][node] module containing samples demonstrating wrapping shell scripts 
 by Atomist handlers and package it up in a Docker image.
